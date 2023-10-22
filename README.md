@@ -115,7 +115,7 @@ with the task description is provided in the beginning of this file.
 
 There might be issues when trying to bootstrap service under `root` account in Linux environment. 
 More precisely, issues with file permissions. The service is configured in such a way, that 
-it successfully deals with non-root directories and files, especially, when the repository
+it successfully deals with _non-root_ directories and files, especially, when the repository
 itself and its files / directories do not belong to the `root` user. On Mac environment, if you 
 are using your ordinary user for dealing with this project, everything should work out of the box.
 
