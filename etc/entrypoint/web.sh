@@ -20,6 +20,10 @@ if [ $TARGET_UID != 0 ] || [ $TARGET_GID != 0 ]; then
     # Change ownership of delegated folders
     printf '%s\n' "[$(date +"%T")] Changing ownership of delegated folders..." >&1
     chown $TARGET_UID:$TARGET_GID public vendor || true
+
+    # Change ownership of delegated files
+    printf '%s\n' "[$(date +"%T")] Changing ownership of delegated files..." >&1
+    chown $TARGET_UID:$TARGET_GID composer.lock || true
 fi
 
 printf '%s\n' "[$(date +"%T")] Setting up log directory" >&1
