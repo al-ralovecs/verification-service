@@ -1,0 +1,173 @@
+#!/bin/bash
+
+ENV_FILE_PATH="$(dirname "$0")/../.env"
+DOCKER_COMPOSE_PATH="$(dirname "$0")/../docker-compose.yml"
+
+source "$(dirname "$0")/_helper.sh"
+
+if [ ! -f "$ENV_FILE_PATH" ]; then
+    infoMessage "Copying .env file from .env.dist"
+    cp "${ENV_FILE_PATH}.dist" "$ENV_FILE_PATH"
+fi
+
+source "$ENV_FILE_PATH"
+
+buildImage() {
+    if ! isContainerRunning "$DEV_CONTAINER_NAME" ; then
+        . "$(dirname "$0")"/check-docker-version.sh
+        COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker compose --env-file "$ENV_FILE_PATH" -f "$DOCKER_COMPOSE_PATH" build app
+        successMessage "[app] Container build successfully"
+    else
+        infoMessage "[app] Cannot rebuild running $DEV_CONTAINER_NAME container. Please, stop it before executing the command."
+    fi
+}
+
+stopContainer() {
+    if isContainerRunning "$DEV_CONTAINER_NAME" ; then
+        infoMessage "[app] Stopping development environment..."
+        docker compose --env-file "$ENV_FILE_PATH" --project-name="$COMPOSE_PROJECT_NAME" down
+    fi
+}
+
+startContainer() {
+    if ! isContainerRunning "$DEV_CONTAINER_NAME" ; then
+        . "$(dirname "$0")"/check-docker-version.sh
+        infoMessage "[app] Starting development container..."
+        {
+            COMPOSE_DOCKER_CLI_BUILD=1 DOCKER_BUILDKIT=1 docker compose --env-file "$ENV_FILE_PATH" -f "$DOCKER_COMPOSE_PATH" --profile=app up -d
+
+            if [ $? -ne 0 ]; then
+                return 1
+            fi
+        } || {
+            return 1
+        }
+    else
+        infoMessage "[app] Development container is already up and running"
+        return 0
+    fi
+}
+
+buildDevContainer() {
+    local _build_command=$1
+
+    if ! isContainerRunning "$DEV_CONTAINER_NAME" ; then
+        . $0 up
+    fi
+
+    docker exec -it "$DEV_CONTAINER_NAME" sh -c "su-exec $DEV_CONTAINER_USER ./bin/build.sh ${_build_command}"
+}
+
+
+runDependencyCommand() {
+    local _dependency=$1
+    local _command=$2
+
+    if dependencyExists "$_dependency"; then
+        _dependencyController="$(dirname "$0")/../${_dependency}/control.sh"
+        if [ -f "$_dependencyController" ]; then
+            ${_dependencyController} ${_command}
+        else
+            exitWithErrorMessage "${_dependencyController} does not exist"
+        fi
+    else
+        exitWithErrorMessage "\"${_dependency}\" dependency is not registered or activated"
+    fi
+}
+
+runInfrastructureCommand() {
+    local _command=$1
+    local _dependencyController
+
+    for dependency in $(echo "$INFRASTRUCTURE_COMPONENTS" | sed 's/,/\n/g' | sort | uniq); do
+        runDependencyCommand ${dependency} ${_command}
+    done
+}
+
+shift $(($OPTIND - 1))
+COMMAND=$1
+
+if [ -z "$COMMAND" ]; then
+    if ! isContainerRunning "$DEV_CONTAINER_NAME" ; then
+        COMMAND="start"
+    else
+        COMMAND="stop"
+    fi
+fi
+
+case $COMMAND in
+    build-image)
+        buildImage
+        ;;
+
+    up | start)
+        stopContainer
+        startContainer
+        if [ $? -eq 0 ]; then
+            runInfrastructureCommand up
+        else
+            exitWithErrorMessage "[app] Could not start application container"
+        fi
+        successMessage "Development environment started"
+        ;;
+
+    down | stop)
+        stopContainer
+        successMessage "Development environment stopped"
+        ;;
+
+    build)
+        buildDevContainer $2
+        ;;
+
+    php-cs-fixer | cs-fixer | cs)
+        infoMessage "Running PHP-CS-Fixer"
+        "$(dirname "$0")/php-cs-fixer" "${2:-fix}"
+        ;;
+
+    phpunit | unit)
+        infoMessage "Running PHPUnit"
+        "$(dirname "$0")/phpunit" "${2}"
+        ;;
+
+    phpstan | stan)
+        "$(dirname "$0")/phpstan" "${2}"
+        ;;
+
+    lint-container)
+        infoMessage "Linting Container"
+        "$(dirname "$0")/console" lint:container
+        ;;
+
+    ssh)
+        docker exec -it "$DEV_CONTAINER_NAME" sh -c "su ${2-$DEV_CONTAINER_USER}"
+        ;;
+
+    help)
+        echo "Usage: make dev [command] ...
+Commands:
+    build-image     Build development container image
+    up, start       Start development environment containers
+    down, stop      Stop development environment containers
+    build           Start development environment containers
+                    if not yet started and build project
+    php-cs-fixer, cs-fixer, cs
+                    Run PHP-CS-Fixer in DEV container
+    phpstan, stan   Run PHPStan in DEV container
+    phpunit, unit   Run PHPUnit in DEV container
+    lint-container  Run linting container in DEV container
+    ssh             Enter development application container
+                    via ssh
+    ${INFRASTRUCTURE_COMPONENTS//,/, }
+                    Control infrastructure dependencies
+"
+        ;;
+
+    *)
+        if dependencyExists "$COMMAND"; then
+            runDependencyCommand $COMMAND $2
+        else
+            exitWithErrorMessage "Invalid command. Valid values are help, build-image, up|start, down|stop, build, ssh, pre-commit, ${INFRASTRUCTURE_COMPONENTS//,/, }"
+        fi
+        ;;
+esac

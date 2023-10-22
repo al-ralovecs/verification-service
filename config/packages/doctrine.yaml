@@ -1,0 +1,46 @@
+parameters:
+    kernel.orm_mapping_dir: "%kernel.project_dir%/config/orm"
+
+doctrine:
+    dbal:
+        connections:
+            default:
+                driver: 'pdo_pgsql'
+                charset: utf8
+                dbname: '%env(resolve:DATABASE_NAME)%'
+                host: '%env(resolve:DATABASE_HOST)%'
+                server_version: 13.6
+                port: '5432'
+                user: '%env(resolve:DATABASE_USER)%'
+                password: '%env(resolve:DATABASE_PASS)%'
+                mapping_types:
+                    enum: string
+
+    orm:
+        auto_generate_proxy_classes: "%kernel.debug%"
+
+        entity_managers:
+            default:
+                connection: default
+                auto_mapping: false
+                mappings:
+                    notification:
+                        type: xml
+                        dir: "%kernel.orm_mapping_dir%/notification"
+                        prefix: "Component\\Notification\\Model"
+                        is_bundle: false
+                    template:
+                        type: xml
+                        dir: "%kernel.orm_mapping_dir%/template"
+                        prefix: "Component\\Template\\Model"
+                        is_bundle: false
+                    verification:
+                        type: xml
+                        dir: "%kernel.orm_mapping_dir%/verification"
+                        prefix: "Component\\Verification\\Model"
+                        is_bundle: false
+
+when@prod:
+    doctrine:
+        orm:
+            metadata_cache_driver: apc

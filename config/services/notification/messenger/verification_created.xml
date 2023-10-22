@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+
+        <service id="Component\Notification\Listener\VerificationCreatedListener" autowire="true">
+
+            <tag name="messenger.message_handler" handles="Component\Verification\Event\VerificationCreatedEvent" />
+        </service>
+
+        <service id="Component\Notification\Processor\NotificationProcessorInterface"
+                 class="Component\Notification\Processor\Decorator\ChainNotificationProcessor">
+            <call method="add">
+                <argument key="$notificationProcessor" type="service">
+                    <service class="Component\Notification\Processor\NotificationContentFetchingProcessor" autowire="true" />
+                </argument>
+                <argument key="$priority">1024</argument>
+            </call>
+
+            <call method="add">
+                <argument key="$notificationProcessor" type="service">
+                    <service class="Component\Notification\Processor\NotificationPersistingProcessor" autowire="true" />
+                </argument>
+                <argument key="$priority">128</argument>
+            </call>
+        </service>
+
+    </services>
+
+</container>

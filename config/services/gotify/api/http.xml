@@ -1,0 +1,38 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+
+        <!-- Http client -->
+
+        <service id="component.gotify.gateway.http_client"
+                 class="Component\Http\Bridge\GuzzleHttp\Client\Client">
+            <argument key="$client" type="service">
+                <service class="GuzzleHttp\Client">
+                    <argument key="$config" type="collection">
+                        <argument key="verify">false</argument>
+                        <argument key="http_errors">true</argument>
+                        <argument key="curl" type="collection">
+                            <argument key="body_as_string">true</argument>
+                        </argument>
+                        <argument key="handler" type="service">
+                            <service class="GuzzleHttp\HandlerStack">
+                                <factory class="GuzzleHttp\HandlerStack" method="create" />
+                            </service>
+                        </argument>
+                    </argument>
+                </service>
+            </argument>
+            <argument key="$uriTransformer" type="service">
+                <service class="Component\Http\Bridge\Psr7\Transformer\UriTransformer">
+                    <argument key="$endpointUrl">%env(APP_GOTIFY_API_URL)%</argument>
+                </service>
+            </argument>
+        </service>
+
+    </services>
+
+</container>

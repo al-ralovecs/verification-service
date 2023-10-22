@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+
+        <service id="Component\Verification\Checker\DuplicateVerificationCheckerInterface"
+                 class="Component\Verification\Checker\DuplicateVerificationChecker" autowire="true">
+            <argument key="$ttl" type="service">
+                <service class="DateInterval">
+                    <argument key="$duration">%env(APP_VERIFICATION_EXPIRATION_TTL)%</argument>
+                </service>
+            </argument>
+            <argument key="$maxAttempts" type="string">%env(APP_VERIFICATION_ATTEMPTS)%</argument>
+        </service>
+
+    </services>
+</container>

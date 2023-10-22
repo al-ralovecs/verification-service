@@ -1,0 +1,41 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+
+        <service id="Component\MessageRecorder\Bridge\Messenger\Resolver\MessageBusResolverInterface"
+                 class="Component\MessageRecorder\Bridge\Messenger\Resolver\Decorator\FirstNonNullMessageBusResolver">
+            <call method="add">
+                <argument key="$resolver" type="service">
+                    <service class="Component\MessageRecorder\Bridge\Messenger\Resolver\EventBusResolver">
+                        <argument key="$bus" type="service" id="event.bus" />
+                    </service>
+                </argument>
+                <argument key="$priority">256</argument>
+            </call>
+
+            <call method="add">
+                <argument key="$resolver" type="service">
+                    <service class="Component\MessageRecorder\Bridge\Messenger\Resolver\CommandBusResolver">
+                        <argument key="$bus" type="service" id="command.bus" />
+                    </service>
+                </argument>
+                <argument key="$priority">128</argument>
+            </call>
+
+            <call method="add">
+                <argument key="$resolver" type="service">
+                    <service class="Component\MessageRecorder\Bridge\Messenger\Resolver\FallbackMessageBusResolver">
+                        <argument key="$bus" type="service" id="messenger.default_bus" />
+                    </service>
+                </argument>
+                <argument key="$priority">64</argument>
+            </call>
+        </service>
+
+    </services>
+
+</container>

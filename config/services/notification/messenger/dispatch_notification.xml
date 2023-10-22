@@ -1,0 +1,78 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+
+        <service id="component.notification.command.dispatch_notification"
+                 class="Component\Messenger\Handler\Decorator\LockWaitTimeoutExceededRetryableMessageHandler" autowire="true">
+            <argument key="$decoratedHandler" type="service">
+                <service class="Component\Messenger\Handler\Decorator\ExceptionSuppressibleMessageHandler">
+                    <argument key="$decoratedHandler" type="service">
+                        <service class="Component\Notification\Command\Handler\DispatchNotificationHandler" autowire="true">
+                            <argument key="$notificationProcessor" type="service"
+                                      id="component.notification.processor.dispatch_notification" />
+                        </service>
+                    </argument>
+                </service>
+            </argument>
+
+            <tag name="messenger.message_handler" handles="Component\Notification\Command\DispatchNotificationCommand" />
+        </service>
+
+        <service id="component.notification.processor.dispatch_notification"
+                 class="Component\Notification\Processor\Decorator\ChainNotificationProcessor">
+            <call method="add">
+                <argument key="$notificationProcessor" type="service">
+                    <service class="Component\Notification\Processor\Decorator\DelegateNotificationProcessor" autowire="true" />
+                </argument>
+                <argument key="$priority">1024</argument>
+            </call>
+
+            <call method="add">
+                <argument key="$notificationProcessor" type="service">
+                    <service class="Component\Notification\Processor\NotificationDispatchFinalizingProcessor" />
+                </argument>
+                <argument key="$priority">128</argument>
+            </call>
+
+            <call method="add">
+                <argument key="$notificationProcessor" type="service">
+                    <service class="Component\Notification\Processor\NotificationPersistingProcessor" autowire="true" />
+                </argument>
+                <argument key="$priority">0</argument>
+            </call>
+        </service>
+
+        <service id="Component\Notification\Processor\NotificationProcessorMapInterface"
+                 class="Component\Notification\Processor\NotificationProcessorMap" >
+            <call method="add">
+                <argument key="$channel" type="constant">Component\Notification\Enum\Channel::MOBILE</argument>
+                <argument key="$notificationProcessor" type="service">
+                    <service class="Component\Notification\Processor\NotificationDispatchingProcessor">
+                        <argument key="$notificationDispatcher" type="service">
+                            <service class="Component\Notification\Dispatcher\NotificationMobileDispatcher">
+                                <argument key="$commandBus" type="service" id="command.bus" />
+                            </service>
+                        </argument>
+                    </service>
+                </argument>
+            </call>
+
+            <call method="add">
+                <argument key="$channel" type="constant">Component\Notification\Enum\Channel::EMAIL</argument>
+                <argument key="$notificationProcessor" type="service">
+                    <service class="Component\Notification\Processor\NotificationDispatchingProcessor">
+                        <argument key="$notificationDispatcher" type="service">
+                            <service class="Component\Notification\Dispatcher\NotificationEmailDispatcher" autowire="true" />
+                        </argument>
+                    </service>
+                </argument>
+            </call>
+        </service>
+
+    </services>
+
+</container>

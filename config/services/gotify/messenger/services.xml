@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <imports>
+        <import resource="init.xml" />
+        <import resource="create_recipient.xml" />
+        <import resource="list_apps.xml" />
+        <import resource="create_app.xml" />
+        <import resource="publish_message.xml" />
+    </imports>
+
+</container>

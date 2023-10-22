@@ -1,0 +1,35 @@
+version: '3.9'
+
+networks:
+    default:
+        driver: bridge
+        name: ${NETWORK_NAME}
+
+services:
+    dev:
+        build:
+            context: ../../
+            args:
+                BUILD_ROLE: "dev"
+        container_name: ${DEV_CONTAINER_NAME}
+        environment:
+            GITLAB_ACCESS_TOKEN: ${GITLAB_ACCESS_TOKEN}
+        volumes:
+            - "../../:/var/www/app"
+        labels:
+            - traefik.http.routers.${DEV_CONTAINER_NAME}-template.rule=Host(`${APP_TEMPLATE_HOST}`)
+            - traefik.http.routers.${DEV_CONTAINER_NAME}-template.service=${DEV_CONTAINER_NAME}-template
+            - traefik.http.services.${DEV_CONTAINER_NAME}-template.loadbalancer.server.port=88
+            - traefik.http.routers.${DEV_CONTAINER_NAME}-verification.rule=Host(`${APP_VERIFICATION_HOST}`)
+            - traefik.http.routers.${DEV_CONTAINER_NAME}-verification.service=${DEV_CONTAINER_NAME}-verification
+            - traefik.http.services.${DEV_CONTAINER_NAME}-verification.loadbalancer.server.port=89
+
+    consumer:
+        build:
+            context: ../../
+            args:
+                BUILD_ROLE: "consumer"
+                GITLAB_ACCESS_TOKEN: ${GITLAB_ACCESS_TOKEN}
+        container_name: ${CONSUMER_CONTAINER_NAME}
+        volumes:
+            - "../../:/var/www/app"

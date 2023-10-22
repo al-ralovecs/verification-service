@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+
+        <service id="component.gotify.command.send_message.list_apps"
+                 class="Component\Gotify\Command\Handler\SendMessageHandler">
+            <argument key="$sendMessageProcessor" type="service">
+                <service class="Component\Gotify\Processor\Decorator\ApplicationTokenObtainingSendMessageProcessor">
+                    <argument key="$decoratedProcessor" type="service">
+                        <service class="Component\Gotify\Processor\GetApplicationTokenSendMessageProcessor">
+                            <argument key="$applicationTokenFetcher" type="service">
+                                <service class="Component\Gotify\Bridge\Application\ListApplicationTokenFetcher" autowire="true">
+                                    <argument key="$recipientPassword" type="string">%env(APP_GOTIFY_RECIPIENT_PASSWORD)%</argument>
+                                </service>
+                            </argument>
+                            <argument key="$applicationName" type="string">%env(APP_GOTIFY_APPLICATION_NAME)%</argument>
+                        </service>
+                    </argument>
+                    <argument key="$commandBus" type="service" id="command.bus" />
+                    <argument key="$step" type="constant">Component\Gotify\Enum\SendMessageStep::GET_APPLICATION_FROM_LIST</argument>
+                </service>
+            </argument>
+
+            <tag name="messenger.message_handler" handles="Component\Gotify\Command\ListAppsMessageSendingCommand" />
+        </service>
+
+    </services>
+
+</container>

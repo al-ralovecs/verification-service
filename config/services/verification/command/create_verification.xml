@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+
+        <service id="Component\Verification\Command\Handler\CreateVerificationHandler" autowire="true" />
+
+        <service id="Component\Verification\Processor\Create\VerificationProcessorInterface"
+                 class="Component\Verification\Processor\Create\Decorator\ChainVerificationProcessor">
+            <call method="add">
+                <argument key="$verificationProcessor" type="service">
+                    <service class="Component\Verification\Processor\Create\VerificationValidatingProcessor" autowire="true" />
+                </argument>
+                <argument key="$priority" type="constant">SN\Collection\Enum\Priority::HIGH</argument>
+            </call>
+
+            <call method="add">
+                <argument key="$verificationProcessor" type="service">
+                    <service class="Component\Verification\Processor\Create\PersistingVerificationProcessor" autowire="true" />
+                </argument>
+            </call>
+        </service>
+
+        <service id="Component\Verification\Validator\Create\CreateVerificationValidatorInterface"
+                 class="Component\Verification\Validator\Create\Decorator\ChainCreateVerificationValidator">
+            <call method="add">
+                <argument key="$verificationValidator" type="service">
+                    <service class="Component\Verification\Validator\Create\CreateVerificationDuplicateValidator" autowire="true" />
+                </argument>
+            </call>
+        </service>
+
+    </services>
+</container>

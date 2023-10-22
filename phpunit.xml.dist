@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.2/phpunit.xsd"
+         backupGlobals="false"
+         colors="true"
+         bootstrap="tests/bootstrap.php"
+         failOnRisky="true"
+         failOnWarning="true">
+
+    <php>
+        <ini name="error_reporting" value="-1"/>
+        <server name="KERNEL_CLASS" value="Application\Kernel" />
+        <server name="APP_ENV" value="test" force="true"/>
+        <server name="APP_DEBUG" value="true" force="true"/>
+        <server name="SHELL_VERBOSITY" value="-1"/>
+    </php>
+
+    <coverage/>
+
+    <testsuites>
+        <testsuite name="Library Tests">
+            <directory>./tests/</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+        <exclude>
+            <directory>./tests</directory>
+            <directory>./vendor</directory>
+            <file>./src/Application/Kernel.php</file>
+        </exclude>
+    </source>
+</phpunit>

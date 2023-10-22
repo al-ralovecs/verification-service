@@ -1,0 +1,28 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+
+        <service id="Component\Gotify\Bridge\Gateway\Application\List\Gateway">
+            <argument key="$client" type="service" id="component.gotify.gateway.http_client" />
+            <argument key="$clientResponseTransformer" type="service" id="component.gotify.gateway.application.list.response_transformer" />
+        </service>
+
+        <service id="component.gotify.gateway.application.list.response_transformer"
+                 class="Component\Gateway\Response\Transformer\Decorator\FirstNonNullClientResponseTransformer">
+            <call method="add">
+                <argument key="$transformer" type="service">
+                    <service class="Component\Gateway\Response\Transformer\Decorator\StatusApplicableClientResponseTransformer">
+                        <argument key="$status">200</argument>
+                        <argument key="$decoratedClientResponseTransformer" type="service">
+                            <service class="Component\Gotify\Bridge\Gateway\Application\List\ResponseTransformer" />
+                        </argument>
+                    </service>
+                </argument>
+            </call>
+        </service>
+
+    </services>
+</container>

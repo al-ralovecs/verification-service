@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+
+        <service id="Component\Notification\Bridge\Gateway\Template\Gateway">
+            <argument key="$client" type="service" id="component.notification.template.http_client" />
+            <argument key="$clientResponseTransformer" type="service" id="component.notification.gateway.template.response_transformer" />
+            <argument key="$requestBodyFactory" type="service">
+                <service class="Component\Notification\Bridge\Gateway\Template\RequestBodyFactory" />
+            </argument>
+        </service>
+
+        <service id="component.notification.gateway.template.response_transformer"
+                 class="Component\Gateway\Response\Transformer\Decorator\FirstNonNullClientResponseTransformer">
+            <call method="add">
+                <argument key="$transformer" type="service">
+                    <service class="Component\Gateway\Response\Transformer\Decorator\StatusApplicableClientResponseTransformer">
+                        <argument key="$status">200</argument>
+                        <argument key="$decoratedClientResponseTransformer" type="service">
+                            <service class="Component\Notification\Bridge\Gateway\Template\ResponseTransformer" />
+                        </argument>
+                    </service>
+                </argument>
+            </call>
+        </service>
+
+    </services>
+</container>

@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+
+        <service id="Component\Notification\Sender\NotificationEmailSenderInterface"
+                 class="Component\Notification\Bridge\Mailer\NotificationEmailSender" autowire="true">
+            <argument key="$senderEmail">%env(APP_NOTIFICATION_SENDER_EMAIL)%</argument>
+        </service>
+
+    </services>
+
+</container>

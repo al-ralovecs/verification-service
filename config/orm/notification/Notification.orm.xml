@@ -1,0 +1,24 @@
+<?xml version="1.0" ?>
+
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity table="notification"
+            name="Component\Notification\Model\Notification"
+            repository-class="Component\Notification\Bridge\Doctrine\Repository\NotificationRepository"
+            change-tracking-policy="DEFERRED_EXPLICIT">
+
+        <id name="id" type="uuid">
+            <generator strategy="NONE"/>
+        </id>
+
+        <field name="recipient" column="recipient" length="128" />
+        <field name="channel" column="channel" enum-type="Component\Notification\Enum\Channel" length="16" />
+        <embedded name="body" class="Component\Notification\Model\NotificationBody" use-column-prefix="false" />
+        <field name="dispatched" column="dispatched" type="boolean" />
+        <field name="createdAt" column="created_at" type="datetime_immutable" />
+        <field name="updatedAt" column="updated_at" type="datetime_immutable" />
+
+    </entity>
+</doctrine-mapping>

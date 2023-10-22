@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+
+        <service id="component.gotify.command.send_message.create_recipient"
+                 class="Component\Gotify\Command\Handler\SendMessageHandler">
+            <argument key="$sendMessageProcessor" type="service">
+                <service class="Component\Gotify\Processor\Decorator\RecipientPingingSendMessageProcessor">
+                    <argument key="$decoratedProcessor" type="service">
+                        <service class="Component\Gotify\Processor\PingRecipientSendMessageProcessor">
+                            <argument key="$recipientPinger" type="service">
+                                <service class="Component\Gotify\Bridge\Recipient\CreateRecipientPinger" autowire="true">
+                                    <argument key="$pass" type="string">%env(APP_GOTIFY_RECIPIENT_PASSWORD)%</argument>
+                                </service>
+                            </argument>
+                        </service>
+                    </argument>
+                    <argument key="$commandBus" type="service" id="command.bus" />
+                    <argument key="$step" type="constant">Component\Gotify\Enum\SendMessageStep::CREATE_NEW_RECIPIENT</argument>
+                </service>
+            </argument>
+
+            <tag name="messenger.message_handler" handles="Component\Gotify\Command\CreateRecipientMessageSendingCommand" />
+        </service>
+
+    </services>
+
+</container>

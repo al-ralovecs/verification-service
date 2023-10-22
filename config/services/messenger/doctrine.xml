@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+
+        <service id="Component\Messenger\Bridge\Doctrine\Messenger\Middleware\TransactionMiddleware" autowire="true">
+            <argument key="$connectionRegistry" type="service" id="doctrine" />
+        </service>
+
+        <service id="Component\Messenger\Model\MessageToConnectionMapInterface"
+                 class="Component\Messenger\Model\MessageToConnectionMap"
+                 autowire="true">
+            <argument key="$availableConnections" type="expression">service('doctrine').getConnectionNames()</argument>
+            <argument key="$messageToConnectionMap">%component.messenger.doctrine.message_to_connection_map%</argument>
+        </service>
+
+    </services>
+
+</container>

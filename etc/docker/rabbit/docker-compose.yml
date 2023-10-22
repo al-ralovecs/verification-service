@@ -1,0 +1,26 @@
+version: '3.9'
+
+networks:
+    default:
+        external: true
+        name: ${NETWORK_NAME}
+
+services:
+    rabbit:
+        image: rabbitmq:3.9-management-alpine
+        container_name: ${RABBIT_CONTAINER_NAME}
+        privileged: true
+        healthcheck:
+            test: [ "CMD", "rabbitmqctl", "cluster_status" ]
+            interval: 5s
+            timeout: 2s
+            retries: 20
+        labels:
+            - traefik.http.routers.${RABBIT_CONTAINER_NAME}.rule=Host(`${RABBIT_CONTAINER_HOSTNAME}`)
+            - traefik.http.routers.${RABBIT_CONTAINER_NAME}.service=${RABBIT_CONTAINER_NAME}
+            - traefik.http.services.${RABBIT_CONTAINER_NAME}.loadbalancer.server.port=15672
+        networks:
+            - default
+        profiles:
+            - infrastructure
+            - rabbit

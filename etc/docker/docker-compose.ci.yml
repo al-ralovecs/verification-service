@@ -1,0 +1,39 @@
+version: '3.9'
+
+networks:
+    default:
+        driver: bridge
+        name: ${NETWORK_NAME}
+
+services:
+    ci:
+        build:
+            context: ../../
+            args:
+                BUILD_ROLE: "ci"
+                GITLAB_ACCESS_TOKEN: ${GITLAB_ACCESS_TOKEN}
+        container_name: ${CI_CONTAINER_NAME}
+        depends_on:
+            postgres:
+                condition: service_healthy
+        networks:
+            - default
+
+    postgres:
+        container_name: ${PG_CONTAINER_NAME}
+        image: postgres:13.6
+        environment:
+            POSTGRESQL_FSYNC: 'off'
+            POSTGRES_USER: ${DB_USER}
+            PGUSER: ${DB_USER}
+            POSTGRES_PASSWORD: ${DB_PASS}
+        healthcheck:
+            test: [ "CMD", "pg_isready" ]
+            interval: 10s
+            timeout: 2s
+            retries: 3
+            start_period: 30s
+        networks:
+            default:
+                aliases:
+                    - verification-service-postgres

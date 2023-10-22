@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+source "$(dirname "$0")/../.env"
+
+docker exec "$DEV_CONTAINER_NAME" sh -c "./vendor/bin/phpstan analyse -c ./phpstan.neon"

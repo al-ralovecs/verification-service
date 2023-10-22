@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity table="verification"
+            name="Component\Verification\Model\Verification"
+            repository-class="Component\Verification\Bridge\Doctrine\Repository\VerificationRepository"
+            change-tracking-policy="DEFERRED_EXPLICIT">
+
+        <id name="id" type="uuid">
+            <generator strategy="NONE"/>
+        </id>
+
+        <unique-constraints>
+            <unique-constraint name="duplicate_exists" columns="identity,type,created_at,attempts" />
+        </unique-constraints>
+
+        <embedded name="subject" class="Component\Verification\Model\VerificationSubject" use-column-prefix="false" />
+        <field name="confirmed" column="confirmed" type="boolean" />
+        <field name="code" column="code" length="8" />
+        <field name="attempts" column="attempts" type="smallint" />
+        <embedded name="userInfo" class="Component\Verification\Model\VerificationUserInfo" use-column-prefix="false" />
+        <field name="createdAt" column="created_at" type="datetime_immutable" />
+        <field name="updatedAt" column="updated_at" type="datetime_immutable" />
+
+    </entity>
+</doctrine-mapping>

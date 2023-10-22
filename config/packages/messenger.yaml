@@ -1,0 +1,213 @@
+framework:
+    messenger:
+        default_bus: event.bus
+        buses:
+            command.bus:
+                middleware:
+                    - doctrine_ping_connection
+                    - Component\Messenger\Bridge\Doctrine\Messenger\Middleware\TransactionMiddleware
+
+            event.bus:
+                default_middleware: allow_no_handlers
+                middleware:
+                    - doctrine_ping_connection
+
+        failure_transport: failed
+
+        transports:
+            failed:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    auto_setup: "%env(bool:MESSENGER_AUTO_SETUP)%"
+                    persistent: true
+                    exchange:
+                        name: '%env(string:MESSENGER_QUEUE_PREFIX)%failures'
+                    queues:
+                        '%env(string:MESSENGER_QUEUE_PREFIX)%failures': ~
+
+            !php/const Component\Messenger\Enum\TransportName::VERIFICATION_CREATED:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                failure_transport: verification_created_failures
+                retry_strategy: &default_retry_strategy
+                    max_retries: 3
+                    # milliseconds delay
+                    delay: 1000
+                    # causes the delay to be higher before each retry
+                    # e.g. 1-second delay, 2 seconds, 4 seconds
+                    multiplier: 2
+                    max_delay: 0
+                options: &default_transport_options
+                    auto_setup: "%env(bool:MESSENGER_AUTO_SETUP)%"
+                    persistent: true
+                    exchange:
+                        name: '%env(exchange_name:VERIFICATION_CREATED)%'
+                    queues:
+                        '%env(queue_name:VERIFICATION_CREATED)%': ~
+                    delay:
+                        exchange_name: "%env(string:MESSENGER_QUEUE_PREFIX)%delays"
+                        queue_name_pattern: "%%exchange_name%%_delay_%%delay%%"
+
+            verification_created_failures:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    <<: *default_transport_options
+                    exchange:
+                        name: '%env(failure_exchange_name:VERIFICATION_CREATED)%'
+                    queues:
+                        '%env(failure_queue_name:VERIFICATION_CREATED)%': ~
+
+            !php/const Component\Messenger\Enum\TransportName::VERIFICATION_CONFIRMED:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                failure_transport: verification_confirmed_failures
+                options:
+                    <<: *default_transport_options
+                    exchange:
+                        name: '%env(exchange_name:VERIFICATION_CONFIRMED)%'
+                    queues:
+                        '%env(queue_name:VERIFICATION_CONFIRMED)%': ~
+
+            verification_confirmed_failures:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    <<: *default_transport_options
+                    exchange:
+                        name: '%env(failure_exchange_name:VERIFICATION_CONFIRMED)%'
+                    queues:
+                        '%env(failure_queue_name:VERIFICATION_CONFIRMED)%': ~
+
+            !php/const Component\Messenger\Enum\TransportName::VERIFICATION_CONFIRMATION_FAILED:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                failure_transport: verification_confirmation_failed_failures
+                options:
+                    <<: *default_transport_options
+                    exchange:
+                        name: '%env(exchange_name:VERIFICATION_CONFIRMATION_FAILED)%'
+                    queues:
+                        '%env(queue_name:VERIFICATION_CONFIRMATION_FAILED)%': ~
+
+            verification_confirmation_failed_failures:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    <<: *default_transport_options
+                    exchange:
+                        name: '%env(failure_exchange_name:VERIFICATION_CONFIRMATION_FAILED)%'
+                    queues:
+                        '%env(failure_queue_name:VERIFICATION_CONFIRMATION_FAILED)%': ~
+
+            !php/const Component\Messenger\Enum\TransportName::NOTIFICATION_DISPATCH:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                failure_transport: notification_dispatch_failures
+                options:
+                    <<: *default_transport_options
+                    exchange:
+                        name: '%env(exchange_name:NOTIFICATION_DISPATCH)%'
+                    queues:
+                        '%env(queue_name:NOTIFICATION_DISPATCH)%': ~
+
+            notification_dispatch_failures:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    <<: *default_transport_options
+                    exchange:
+                        name: '%env(failure_exchange_name:NOTIFICATION_DISPATCH)%'
+                    queues:
+                        '%env(failure_queue_name:NOTIFICATION_DISPATCH)%': ~
+
+            !php/const Component\Messenger\Enum\TransportName::NOTIFICATION_CREATED:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                failure_transport: notification_created_failures
+                options:
+                    <<: *default_transport_options
+                    exchange:
+                        name: '%env(exchange_name:NOTIFICATION_CREATED)%'
+                    queues:
+                        '%env(queue_name:NOTIFICATION_CREATED)%': ~
+
+            notification_created_failures:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    <<: *default_transport_options
+                    exchange:
+                        name: '%env(failure_exchange_name:NOTIFICATION_CREATED)%'
+                    queues:
+                        '%env(failure_queue_name:NOTIFICATION_CREATED)%': ~
+
+            !php/const Component\Messenger\Enum\TransportName::NOTIFICATION_DISPATCHED:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                failure_transport: notification_dispatched_failures
+                options:
+                    <<: *default_transport_options
+                    exchange:
+                        name: '%env(exchange_name:NOTIFICATION_DISPATCHED)%'
+                    queues:
+                        '%env(queue_name:NOTIFICATION_DISPATCHED)%': ~
+
+            notification_dispatched_failures:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    <<: *default_transport_options
+                    exchange:
+                        name: '%env(failure_exchange_name:NOTIFICATION_DISPATCHED)%'
+                    queues:
+                        '%env(failure_queue_name:NOTIFICATION_DISPATCHED)%': ~
+
+            !php/const Component\Messenger\Enum\TransportName::SEND_EMAIL_MESSAGE:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                failure_transport: send_email_message_failures
+                options:
+                    <<: *default_transport_options
+                    exchange:
+                        name: '%env(exchange_name:SEND_EMAIL_MESSAGE)%'
+                    queues:
+                        '%env(queue_name:SEND_EMAIL_MESSAGE)%': ~
+
+            send_email_message_failures:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    <<: *default_transport_options
+                    exchange:
+                        name: '%env(failure_exchange_name:SEND_EMAIL_MESSAGE)%'
+                    queues:
+                        '%env(failure_queue_name:SEND_EMAIL_MESSAGE)%': ~
+
+            !php/const Component\Messenger\Enum\TransportName::SEND_MOBILE_MESSAGE:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                failure_transport: send_mobile_message_failures
+                options:
+                    <<: *default_transport_options
+                    exchange:
+                        name: '%env(exchange_name:SEND_MOBILE_MESSAGE)%'
+                    queues:
+                        '%env(queue_name:SEND_MOBILE_MESSAGE)%': ~
+
+            send_mobile_message_failures:
+                dsn: '%env(MESSENGER_TRANSPORT_DSN)%'
+                options:
+                    <<: *default_transport_options
+                    exchange:
+                        name: '%env(failure_exchange_name:SEND_MOBILE_MESSAGE)%'
+                    queues:
+                        '%env(failure_queue_name:SEND_MOBILE_MESSAGE)%': ~
+
+        routing:
+            Component\Verification\Event\VerificationCreatedEvent: !php/const Component\Messenger\Enum\TransportName::VERIFICATION_CREATED
+            Component\Verification\Event\VerificationConfirmedEvent: !php/const Component\Messenger\Enum\TransportName::VERIFICATION_CONFIRMED
+            Component\Verification\Event\VerificationConfirmationFailedEvent: !php/const Component\Messenger\Enum\TransportName::VERIFICATION_CONFIRMATION_FAILED
+
+            Component\Notification\Command\DispatchNotificationCommand: !php/const Component\Messenger\Enum\TransportName::NOTIFICATION_DISPATCH
+
+            Component\Notification\Event\NotificationCreatedEvent: !php/const Component\Messenger\Enum\TransportName::NOTIFICATION_CREATED
+            Component\Notification\Event\NotificationDispatchedEvent: !php/const Component\Messenger\Enum\TransportName::NOTIFICATION_DISPATCHED
+
+            Symfony\Component\Mailer\Messenger\SendEmailMessage: !php/const Component\Messenger\Enum\TransportName::SEND_EMAIL_MESSAGE
+
+            Component\Gotify\Command\InitializeMessageSendingCommand: !php/const Component\Messenger\Enum\TransportName::SEND_MOBILE_MESSAGE
+            Component\Gotify\Command\CreateRecipientMessageSendingCommand: !php/const Component\Messenger\Enum\TransportName::SEND_MOBILE_MESSAGE
+            Component\Gotify\Command\ListAppsMessageSendingCommand: !php/const Component\Messenger\Enum\TransportName::SEND_MOBILE_MESSAGE
+            Component\Gotify\Command\CreateAppTokenMessageSendingCommand: !php/const Component\Messenger\Enum\TransportName::SEND_MOBILE_MESSAGE
+            Component\Gotify\Command\FinalizeMessageSendingCommand: !php/const Component\Messenger\Enum\TransportName::SEND_MOBILE_MESSAGE
+
+parameters:
+    component.messenger.doctrine.message_to_connection_map:
+
+        Component\Notification\Command\DispatchNotificationCommand: [ "default" ]

@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+
+        <service id="Component\Gotify\Bridge\Gateway\Recipient\Create\Gateway">
+            <argument key="$client" type="service" id="component.gotify.gateway.http_client" />
+            <argument key="$clientResponseTransformer" type="service" id="component.gotify.gateway.recipient.create.response_transformer" />
+            <argument key="$requestBodyFactory" type="service">
+                <service class="Component\Gotify\Bridge\Gateway\Recipient\Create\RequestBodyFactory" />
+            </argument>
+            <argument key="$userName" type="string">%env(APP_GOTIFY_ADMIN_USER)%</argument>
+            <argument key="$userPass" type="string">%env(APP_GOTIFY_ADMIN_PASS)%</argument>
+        </service>
+
+        <service id="component.gotify.gateway.recipient.create.response_transformer"
+                 class="Component\Gateway\Response\Transformer\Decorator\FirstNonNullClientResponseTransformer">
+            <call method="add">
+                <argument key="$transformer" type="service">
+                    <service class="Component\Gateway\Response\Transformer\Decorator\StatusApplicableClientResponseTransformer">
+                        <argument key="$status">200</argument>
+                        <argument key="$decoratedClientResponseTransformer" type="service">
+                            <service class="Component\Gotify\Bridge\Gateway\Recipient\Create\ResponseTransformer" />
+                        </argument>
+                    </service>
+                </argument>
+            </call>
+        </service>
+
+    </services>
+</container>

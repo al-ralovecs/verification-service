@@ -1,0 +1,30 @@
+version: '3.9'
+
+networks:
+  default:
+    external: true
+    name: ${NETWORK_NAME}
+
+services:
+  postgres:
+    container_name: ${PG_CONTAINER_NAME}
+    image: postgres:13.6
+    environment:
+      POSTGRESQL_FSYNC: 'off'
+      POSTGRES_USER: ${DB_USER}
+      PGUSER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 2s
+      retries: 3
+      start_period: 30s
+    ports:
+      - ${DB_PORT}:5432
+    labels:
+      - traefik.enable=false
+    networks:
+      - default
+    profiles:
+      - postgres

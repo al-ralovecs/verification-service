@@ -1,0 +1,23 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+
+        <service id="component.gotify.command.send_message.publish_message"
+                 class="Component\Gotify\Command\Handler\SendMessageHandler">
+            <argument key="$sendMessageProcessor" type="service">
+                <service class="Component\Gotify\Processor\PublishMessageProcessor" autowire="true" />
+            </argument>
+
+            <tag name="messenger.message_handler" handles="Component\Gotify\Command\FinalizeMessageSendingCommand" />
+        </service>
+
+        <service id="Component\Gotify\Operator\MessagePublisherInterface"
+                 class="Component\Gotify\Bridge\Message\MessagePublisher" autowire="true" />
+
+    </services>
+
+</container>

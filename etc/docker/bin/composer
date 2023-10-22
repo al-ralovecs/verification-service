@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+source "$(dirname "$0")/../.env"
+
+docker exec -it "$DEV_CONTAINER_NAME" sh -c "php -d memory_limit=-1 /usr/local/bin/composer $*"

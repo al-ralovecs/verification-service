@@ -1,0 +1,21 @@
+version: '3.9'
+
+networks:
+    default:
+        external: true
+        name: ${NETWORK_NAME}
+
+services:
+    mailhog:
+        container_name: ${MAILHOG_CONTAINER_NAME}
+        image: mailhog/mailhog
+        ports:
+            - 1025:1025
+        labels:
+            - traefik.http.routers.${MAILHOG_CONTAINER_NAME}.rule=Host(`${MAILHOG_CONTAINER_HOSTNAME}`)
+            - traefik.http.routers.${MAILHOG_CONTAINER_NAME}.service=${MAILHOG_CONTAINER_NAME}
+            - traefik.http.services.${MAILHOG_CONTAINER_NAME}.loadbalancer.server.port=8025
+        networks:
+            - default
+        profiles:
+            - mailhog

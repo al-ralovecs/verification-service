@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+
+<doctrine-mapping xmlns="http://doctrine-project.org/schemas/orm/doctrine-mapping"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://doctrine-project.org/schemas/orm/doctrine-mapping http://doctrine-project.org/schemas/orm/doctrine-mapping.xsd">
+
+    <entity table="template"
+            name="Component\Template\Model\Template"
+            repository-class="Component\Template\Bridge\Doctrine\Repository\TemplateRepository"
+            change-tracking-policy="DEFERRED_EXPLICIT">
+
+        <id name="id" type="uuid">
+            <generator strategy="NONE"/>
+        </id>
+
+        <field name="slug" column="slug" length="64" />
+        <embedded name="content" class="Component\Template\Model\TemplateContent" use-column-prefix="false" />
+
+    </entity>
+</doctrine-mapping>
