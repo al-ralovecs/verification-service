@@ -17,6 +17,9 @@ if [ $TARGET_UID != 0 ] || [ $TARGET_GID != 0 ]; then
         groupmod -o -g "$TARGET_GID" "${APP_USER_NAME}" || true
     fi
 
+    printf '%s\n' "[$(date +"%T")] Setting up vendors directory" >&1
+    [ ! -d "${APP_DIR}/vendor" ] && mkdir -p "${APP_DIR}/vendor"
+
     # Change ownership of delegated folders
     printf '%s\n' "[$(date +"%T")] Changing ownership of delegated folders..." >&1
     chown $TARGET_UID:$TARGET_GID public vendor || true
