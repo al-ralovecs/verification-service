@@ -111,4 +111,12 @@ of information is the response code. This could be easily changed in the code, b
 Requests and responses to both APIs are described in the task for this solution, the Github repository
 with the task description is provided in the beginning of this file.
 
+# NOTE!
+
+There might be issues when trying to bootstrap service under `root` account in Linux environment. 
+More precisely, issues with file permissions. The service is configured in such a way, that 
+it successfully deals with non-root directories and files, especially, when the repository
+itself and its files / directories do not belong to the `root` user. On Mac environment, if you 
+are using your ordinary user for dealing with this project, everything should work out of the box.
+
 Good luck!
